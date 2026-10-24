@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#151a22">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<title>GrabGeist</title>
+<link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+<header>
+  <h1>GrabGeist</h1>
+  <div class="connectRow">
+    <button id="connect" class="primary">Verbinden</button>
+    <button id="disconnect" disabled>Trennen</button>
+    <span id="status" class="status">nicht verbunden</span>
+  </div>
+</header>
+
+<main>
+  <section>
+    <button id="resetlog">Reset-Log</button>
+    <p id="resetInfo" class="resetInfo"></p>
+  </section>
+
+  <section>
+    <canvas id="map"></canvas>
+    <p class="hint">Tippe auf die Karte (grün = erreichbar). Die ESP sucht den Weg um die Sperrzone.</p>
+  </section>
+
+  <section>
+    <h2>Presets</h2>
+    <div class="btnRow">
+      <button data-cmd="PEEK left">Links</button>
+      <button data-cmd="PEEK right">Rechts</button>
+      <button data-cmd="PEEK top">Beide oben</button>
+      <button data-cmd="PEEK hide">Versteckt</button>
+      <button id="stop" class="danger">STOP</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Modi</h2>
+    <div class="btnRow">
+      <button id="auto">AUTO</button>
+      <button id="random">Zufall</button>
+      <button id="rec">Aufnahme</button>
+      <button id="play">Abspielen</button>
+      <button id="statusBtn">Status</button>
+    </div>
+    <p class="hint">AUTO: links → oben → rechts → versteckt · Zufall: autonomes Hervorschauen · Aufnahme/Abspielen: 20 Hz</p>
+  </section>
+
+  <section>
+    <h2>Geschwindigkeit &amp; Strombegrenzung</h2>
+    <label>Geschwindigkeit <span id="speedVal" class="val">100</span>%
+      <input type="range" id="speed" min="0" max="100" step="5" value="100">
+    </label>
+    <label>Strombegrenzung <span id="rampVal" class="val">1000</span> µs/s
+      <input type="range" id="ramp" min="100" max="3400" step="50" value="1000">
+    </label>
+    <button id="rampReset">Standard (1000)</button>
+    <p class="hint">100 % = volle Strombegrenzung · Strombegrenzung = Sicherheits-Deckel (wird auf der ESP gespeichert).</p>
+  </section>
+
+  <section>
+    <h2>Direkte Servo-Steuerung (RAW)</h2>
+    <label><input type="checkbox" id="showPos" checked> Position anzeigen</label>
+    <label>Servo L <span id="rawLval" class="val">1500</span> µs
+      <input type="range" id="rawL" min="500" max="2500" value="1500" step="10">
+    </label>
+    <label>Servo R <span id="rawRval" class="val">1500</span> µs
+      <input type="range" id="rawR" min="500" max="2500" value="1500" step="10">
+    </label>
+    <button id="rawSend">RAW senden</button>
+  </section>
+</main>
+
+<script src="./js/ble.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>

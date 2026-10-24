@@ -1,0 +1,22 @@
+# Cline-Projektregeln — GrabGeistApp
+
+## Sprache
+- Dokumentation, Erklärungen und Antworten: **Deutsch**.
+- Code-Bezeichner (Variablen, Funktionen): **Englisch**.
+
+## Projekt
+- Reine Frontend-PWA (HTML/CSS/JS, Vanilla) — **kein Build-Tool, kein Framework**.
+- Zweck: Bedienoberfläche für die GrabGeist-Firmware über **Web Bluetooth** (Nordic UART Service).
+- Gegenstück: Firmware-Repo **`GrabGeist`** (BLE-Textprotokoll).
+
+## Struktur
+- `index.html`, `manifest.json`, `sw.js` im Wurzelverzeichnis.
+- Assets in `css/`, `js/`, `icons/`.
+- **Relative Pfade** verwenden (App läuft unter `/GrabGeistApp/` auf GitHub Pages).
+
+## Regeln
+- Kein Build-Step: Dateien direkt editierbar, im Browser testbar.
+- BLE-Protokoll (UUIDs + Textbefehle) mit der Firmware abstimmen — bei Änderung **beide Repos** anpassen.
+- `CACHE` in `sw.js` bei jedem Release erhöhen.
+- Keine Geheimnisse committen.
+- Web Bluetooth ist **Android/Desktop Chrome** — iOS wird nicht unterstützt.
