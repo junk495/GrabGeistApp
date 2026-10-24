@@ -332,12 +332,16 @@
 
   renderSteps();
 
-  $('seqRun').onclick = () => {
+  $('seqRun').onclick = async () => {
     if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
     const payload = { version: 1, name: '', loop: $('seqLoop').checked, steps: seq };
-    send('SEQ_SET ' + JSON.stringify(payload));
-    send('SEQ_RUN');
-    progPending.textContent = 'Ablauf gestartet.';
+    try {
+      await send('SEQ_SET ' + JSON.stringify(payload));
+      await send('SEQ_RUN');
+      progPending.textContent = 'Ablauf gestartet.';
+    } catch (e) {
+      progPending.textContent = 'Fehler: ' + e.message;
+    }
   };
   $('seqStop').onclick = () => send('SEQ_STOP');
 
