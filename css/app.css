@@ -172,3 +172,14 @@ input[type="checkbox"] { accent-color: var(--accent); }
 }
 .bottom-nav button.active { color: var(--accent); }
 .bottom-nav button svg { width: 1.35rem; height: 1.35rem; }
+
+.device {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.device:last-child { border-bottom: none; }
+.device span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device button { flex: 0 0 auto; }

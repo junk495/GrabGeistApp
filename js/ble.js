@@ -16,19 +16,35 @@ const Ble = {
   reconnectTimer: null,
   onLine: null,            // (line) => {}
   onStatus: null,          // (text) => {}
+  _onDisconnectBound: null,
 
   async connect() {
+    // Erstverbindung über den System-Dialog (Web Bluetooth verlangt das).
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [SERVICE_UUID] }],
+      optionalServices: [SERVICE_UUID]
+    });
+    return this._connectDevice(device);
+  },
+
+  async connectTo(device) {
+    // Verbindung zu einem bereits bekannten Gerät (ohne Dialog).
+    return this._connectDevice(device);
+  },
+
+  async _connectDevice(device) {
     try {
       this.manualDisconnect = false;
       this._clearReconnect();
+      this.device = device;
 
-      this.device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: [SERVICE_UUID] }],
-        optionalServices: [SERVICE_UUID]
-      });
-      this.device.addEventListener('gattserverdisconnected', () => this._onDisconnect());
+      if (!this._onDisconnectBound) {
+        this._onDisconnectBound = () => this._onDisconnect();
+      }
+      device.removeEventListener('gattserverdisconnected', this._onDisconnectBound);
+      device.addEventListener('gattserverdisconnected', this._onDisconnectBound);
 
-      const server = await this.device.gatt.connect();
+      const server = await device.gatt.connect();
       await this._setup(server);
 
       this.connected = true;
@@ -40,6 +56,14 @@ const Ble = {
       this.txChar = null;
       this._status('Fehler: ' + err);
       return false;
+    }
+  },
+
+  async listDevices() {
+    try {
+      return await navigator.bluetooth.getDevices();
+    } catch (err) {
+      return [];
     }
   },
 
@@ -105,14 +129,8 @@ const Ble = {
 
   async _tryReconnect() {
     if (this.connected || this.manualDisconnect || !this.device) return;
-    try {
-      const server = await this.device.gatt.connect();
-      await this._setup(server);
-      this.connected = true;
-      this._status('verbunden');
-    } catch (err) {
-      this._scheduleReconnect();
-    }
+    const ok = await this._connectDevice(this.device);
+    if (!ok) this._scheduleReconnect();
   },
 
   _clearReconnect() {

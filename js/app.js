@@ -9,6 +9,7 @@
   const connectBtn = $('connect');
   const disconnectBtn = $('disconnect');
   const autoReconnect = $('autoReconnect');
+  const deviceList = $('deviceList');
   const mapCanvas = $('map');
   const mapCtx = mapCanvas.getContext('2d');
   const resetInfo = $('resetInfo');
@@ -160,12 +161,55 @@
     b.addEventListener('click', () => switchView(b.dataset.view));
   });
 
+  async function connectToDevice(device) {
+    const ok = await Ble.connectTo(device);
+    if (ok) {
+      mapRetries = 0;
+      send('MAP');
+      send('RESETLOG');
+    }
+    updateButtons();
+    renderDevices();
+  }
+
+  function renderDevices() {
+    Ble.listDevices().then((devices) => {
+      deviceList.innerHTML = '';
+      if (!devices.length) {
+        deviceList.innerHTML = '<p class="muted">Noch keine gespeicherten Geräte.</p>';
+        return;
+      }
+      devices.forEach((d) => {
+        const row = document.createElement('div');
+        row.className = 'device';
+
+        const label = document.createElement('span');
+        label.textContent = d.name || 'Unbenanntes Gerät';
+
+        const isCurrent = Ble.device && Ble.device.id === d.id;
+        const btn = document.createElement('button');
+        if (isCurrent && Ble.connected) {
+          btn.textContent = 'verbunden';
+          btn.disabled = true;
+        } else {
+          btn.textContent = 'Verbinden';
+          btn.onclick = () => connectToDevice(d);
+        }
+
+        row.appendChild(label);
+        row.appendChild(btn);
+        deviceList.appendChild(row);
+      });
+    });
+  }
+
   // ---- BLE verdrahten ----
   Ble.onLine = handleRxLine;
   Ble.onStatus = (t) => {
     setBleState(t);
     setConn(t, Ble.connected);
     updateButtons();
+    renderDevices();
   };
 
   connectBtn.onclick = async () => {
@@ -217,6 +261,7 @@
   $('rawSend').onclick = sendRaw;
 
   updateButtons();
+  renderDevices();
 
   // ---- Service Worker registrieren (offline/installierbar) ----
   if ('serviceWorker' in navigator) {

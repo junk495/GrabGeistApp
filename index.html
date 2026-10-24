@@ -97,11 +97,17 @@
       <h2>Verbindung</h2>
       <p id="bleState" class="muted">Nicht verbunden</p>
       <div class="btn-grid">
-        <button id="connect" class="primary">Verbinden</button>
+        <button id="connect" class="primary">Neues Gerät suchen</button>
         <button id="disconnect" class="danger" disabled>Trennen</button>
       </div>
       <label class="check"><input type="checkbox" id="autoReconnect" checked> Automatisch wieder verbinden</label>
-      <p class="muted">Beim Verbinden wird das Gerät gespeichert. Bricht die Verbindung ab, wird automatisch neu verbunden — außer du trennst aktiv.</p>
+      <p class="muted">Bricht die Verbindung ab, wird automatisch neu verbunden — außer du trennst aktiv.</p>
+    </section>
+
+    <section class="card">
+      <h2>Gespeicherte Geräte</h2>
+      <div id="deviceList" class="device-list"></div>
+      <p class="muted">Bekanntes Gerät antippen, um ohne Dialog zu verbinden. Neue Geräte einmal über „Neues Gerät suchen“ koppeln.</p>
     </section>
   </section>
 </main>
