@@ -23,6 +23,11 @@
   const rawLval = $('rawLval');
   const rawRval = $('rawRval');
   const showPos = $('showPos');
+  const progMap = $('progMap');
+  const progCtx = progMap.getContext('2d');
+  const progAdd = $('progAdd');
+  const progPending = $('progPending');
+  const stepsEl = $('steps');
 
   let mapInfo = null;
   let mapRows = [];
@@ -30,6 +35,8 @@
   let mapTimer = null;
   let mapRetries = 0;
   let lastRawInteract = 0;
+  let seq = [];            // Schrittliste (lokaler Entwurf)
+  let pendingStep = null;  // zuletzt angefahrene, noch nicht uebernommene Position
 
   function setConn(text, on) {
     connBadge.textContent = text;
@@ -48,10 +55,10 @@
     return Ble.send(line).catch((e) => setBleState('Senden fehlgeschlagen: ' + e));
   }
 
-  function renderMap() {
-    mapCanvas.width = mapInfo.w;
-    mapCanvas.height = mapInfo.h;
-    const img = mapCtx.createImageData(mapInfo.w, mapInfo.h);
+  function renderMapTo(canvas, ctx) {
+    canvas.width = mapInfo.w;
+    canvas.height = mapInfo.h;
+    const img = ctx.createImageData(mapInfo.w, mapInfo.h);
     for (let cy = 0; cy < mapInfo.h; cy++) {
       const row = mapRows[cy] || '';
       for (let cx = 0; cx < mapInfo.w; cx++) {
@@ -64,7 +71,12 @@
         img.data[idx + 3] = 255;
       }
     }
-    mapCtx.putImageData(img, 0, 0);
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function renderMap() {
+    renderMapTo(mapCanvas, mapCtx);
+    renderMapTo(progMap, progCtx);
   }
 
   function clearMapTimeout() {
@@ -131,16 +143,31 @@
     }
   }
 
-  function onTap(e) {
-    if (!mapComplete || !mapInfo) return;
-    const rect = mapCanvas.getBoundingClientRect();
-    const px = Math.floor((e.clientX - rect.left) / rect.width * mapCanvas.width);
-    const py = Math.floor((e.clientY - rect.top) / rect.height * mapCanvas.height);
+  function tapToXY(e, canvas) {
+    if (!mapComplete || !mapInfo) return null;
+    const rect = canvas.getBoundingClientRect();
+    const px = Math.floor((e.clientX - rect.left) / rect.width * canvas.width);
+    const py = Math.floor((e.clientY - rect.top) / rect.height * canvas.height);
     const cx = Math.max(0, Math.min(mapInfo.w - 1, px));
     const cy = Math.max(0, Math.min(mapInfo.h - 1, mapInfo.h - 1 - py)); // Y-Spiegelung
-    const x = mapInfo.xMin + cx * mapInfo.step;
-    const y = mapInfo.yMin + cy * mapInfo.step;
-    send(`MOVE ${x.toFixed(0)} ${y.toFixed(0)}`);
+    return {
+      x: mapInfo.xMin + cx * mapInfo.step,
+      y: mapInfo.yMin + cy * mapInfo.step
+    };
+  }
+
+  function onTap(e) {
+    const p = tapToXY(e, mapCanvas);
+    if (!p) return;
+    send(`MOVE ${p.x.toFixed(0)} ${p.y.toFixed(0)}`);
+  }
+
+  function onProgTap(e) {
+    const p = tapToXY(e, progMap);
+    if (!p) return;
+    send(`MOVE ${p.x.toFixed(0)} ${p.y.toFixed(0)}`);   // live hinfahren
+    pendingStep = { type: 'move', x: Math.round(p.x), y: Math.round(p.y), speed: 100, holdMs: 0 };
+    progPending.textContent = `Bereit: Move (${pendingStep.x}, ${pendingStep.y})`;
   }
 
   function updateButtons() {
@@ -238,6 +265,80 @@
   $('random').onclick = () => send('RANDOM');
   $('rec').onclick = () => send('REC');
   $('play').onclick = () => send('PLAY');
+
+  // ---- Programm (Tab 2): live anfahren -> uebernehmen ----
+  progMap.addEventListener('click', onProgTap);
+
+  document.querySelectorAll('button[data-prog-peek]').forEach((b) => {
+    b.onclick = () => {
+      send(`PEEK ${b.dataset.progPeek}`);
+      pendingStep = { type: 'preset', name: b.dataset.progPeek, speed: 100, holdMs: 0 };
+      progPending.textContent = 'Bereit: Preset ' + b.dataset.progPeek;
+    };
+  });
+
+  progAdd.onclick = () => {
+    if (!pendingStep) { progPending.textContent = 'Erst eine Position anfahren.'; return; }
+    seq.push({ ...pendingStep });
+    pendingStep = null;
+    progPending.textContent = '';
+    renderSteps();
+  };
+
+  function renderSteps() {
+    stepsEl.innerHTML = '';
+    if (!seq.length) {
+      stepsEl.innerHTML = '<p class="muted">Noch keine Schritte.</p>';
+      return;
+    }
+    seq.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'step';
+
+      const type = document.createElement('span');
+      type.className = 'steptype';
+      type.textContent = s.type === 'move' ? 'Move' : s.name;
+      row.appendChild(type);
+
+      const summary = document.createElement('span');
+      summary.className = 'muted';
+      summary.textContent = s.type === 'move' ? '(' + s.x + ', ' + s.y + ')' : 'Preset';
+      row.appendChild(summary);
+
+      const spd = document.createElement('input');
+      spd.type = 'range'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
+      const spdVal = document.createElement('span');
+      spdVal.className = 'val'; spdVal.textContent = s.speed + '%';
+      spd.addEventListener('input', () => { s.speed = +spd.value; spdVal.textContent = spd.value + '%'; });
+      row.appendChild(spd);
+      row.appendChild(spdVal);
+
+      const hold = document.createElement('input');
+      hold.type = 'number'; hold.min = 0; hold.step = 100; hold.value = s.holdMs;
+      hold.addEventListener('input', () => { s.holdMs = +hold.value || 0; });
+      row.appendChild(hold);
+      const ms = document.createElement('span');
+      ms.className = 'muted'; ms.textContent = 'ms';
+      row.appendChild(ms);
+
+      const up = document.createElement('button');
+      up.textContent = '↑';
+      up.onclick = () => { if (i > 0) { [seq[i - 1], seq[i]] = [seq[i], seq[i - 1]]; renderSteps(); } };
+      const down = document.createElement('button');
+      down.textContent = '↓';
+      down.onclick = () => { if (i < seq.length - 1) { [seq[i + 1], seq[i]] = [seq[i], seq[i + 1]]; renderSteps(); } };
+      const del = document.createElement('button');
+      del.textContent = '✕';
+      del.onclick = () => { seq.splice(i, 1); renderSteps(); };
+      row.appendChild(up);
+      row.appendChild(down);
+      row.appendChild(del);
+
+      stepsEl.appendChild(row);
+    });
+  }
+
+  renderSteps();
 
   // ---- Einstellungen (Tab 3) ----
   $('resetlog').onclick = () => { resetInfo.textContent = 'Reset-Log wird abgefragt…'; send('RESETLOG'); };

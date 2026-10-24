@@ -183,3 +183,25 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .device:last-child { border-bottom: none; }
 .device span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .device button { flex: 0 0 auto; }
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: none; }
+.step .steptype { font-weight: 600; min-width: 3.5rem; color: var(--muted); text-transform: capitalize; }
+.step input[type="range"] { flex: 1; min-width: 0; }
+.step input[type="number"] {
+  width: 4.5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
+.step .muted { flex: 0 0 auto; }
+.step button { flex: 0 0 auto; padding: 0.25rem 0.5rem; }

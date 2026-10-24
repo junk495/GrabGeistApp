@@ -50,8 +50,22 @@
   <!-- Tab 2: Programm -->
   <section id="view-program" class="view" hidden>
     <section class="card">
-      <h2>Abläufe (Programm)</h2>
-      <p class="muted">Hier kommt der Ablauf-Editor hin (Move / Preset / Delay / Wait). Noch nicht verfügbar.</p>
+      <h2>Position wählen</h2>
+      <canvas id="progMap"></canvas>
+      <p class="muted">Tippe auf die Karte → der Geist fährt hin. Passt die Position, mit „Übernehmen“ als Schritt übernehmen.</p>
+      <div class="btn-grid">
+        <button data-prog-peek="left">Links</button>
+        <button data-prog-peek="right">Rechts</button>
+        <button data-prog-peek="hide">Versteckt</button>
+      </div>
+      <button id="progAdd" class="primary">Übernehmen</button>
+      <p id="progPending" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>Ablauf</h2>
+      <div id="steps"></div>
+      <p class="muted">Jeder Schritt: Position + Geschwindigkeit + Haltezeit.</p>
     </section>
   </section>
 
