@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#151a22">
+<meta name="theme-color" content="#0d1117">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
 <title>GrabGeist</title>
@@ -12,71 +12,118 @@
 <body>
 <header>
   <h1>GrabGeist</h1>
-  <div class="connectRow">
-    <button id="connect" class="primary">Verbinden</button>
-    <button id="disconnect" disabled>Trennen</button>
-    <span id="status" class="status">nicht verbunden</span>
-  </div>
+  <span id="connBadge" class="conn-badge">nicht verbunden</span>
 </header>
 
 <main>
-  <section>
-    <button id="resetlog">Reset-Log</button>
-    <p id="resetInfo" class="resetInfo"></p>
+  <!-- Tab 1: Steuerung -->
+  <section id="view-control" class="view">
+    <section class="card">
+      <h2>Position</h2>
+      <canvas id="map"></canvas>
+      <p class="muted">Tippe auf die Karte (grün = erreichbar). Die ESP sucht den Weg um die Sperrzone.</p>
+    </section>
+
+    <section class="card">
+      <h2>Presets</h2>
+      <div class="btn-grid">
+        <button data-cmd="PEEK left">Links</button>
+        <button data-cmd="PEEK right">Rechts</button>
+        <button data-cmd="PEEK top">Beide oben</button>
+        <button data-cmd="PEEK hide">Versteckt</button>
+        <button id="stop" class="danger">STOP</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Modi</h2>
+      <div class="btn-grid">
+        <button id="auto">AUTO</button>
+        <button id="random">Zufall</button>
+        <button id="rec">Aufnahme</button>
+        <button id="play">Abspielen</button>
+      </div>
+      <p class="muted">AUTO: links → oben → rechts → versteckt · Zufall: autonomes Hervorschauen · Aufnahme/Abspielen: 20 Hz</p>
+    </section>
   </section>
 
-  <section>
-    <canvas id="map"></canvas>
-    <p class="hint">Tippe auf die Karte (grün = erreichbar). Die ESP sucht den Weg um die Sperrzone.</p>
+  <!-- Tab 2: Programm -->
+  <section id="view-program" class="view" hidden>
+    <section class="card">
+      <h2>Abläufe (Programm)</h2>
+      <p class="muted">Hier kommt der Ablauf-Editor hin (Move / Preset / Delay / Wait). Noch nicht verfügbar.</p>
+    </section>
   </section>
 
-  <section>
-    <h2>Presets</h2>
-    <div class="btnRow">
-      <button data-cmd="PEEK left">Links</button>
-      <button data-cmd="PEEK right">Rechts</button>
-      <button data-cmd="PEEK top">Beide oben</button>
-      <button data-cmd="PEEK hide">Versteckt</button>
-      <button id="stop" class="danger">STOP</button>
-    </div>
+  <!-- Tab 3: Einstellungen & Monitoring -->
+  <section id="view-settings" class="view" hidden>
+    <section class="card">
+      <h2>Diagnose</h2>
+      <div class="btn-grid">
+        <button id="resetlog">Reset-Log</button>
+        <button id="statusBtn">Status</button>
+      </div>
+      <p id="resetInfo" class="mono"></p>
+    </section>
+
+    <section class="card">
+      <h2>Geschwindigkeit &amp; Strombegrenzung</h2>
+      <label>Geschwindigkeit <span id="speedVal" class="val">100</span>%
+        <input type="range" id="speed" min="0" max="100" step="5" value="100">
+      </label>
+      <label>Strombegrenzung <span id="rampVal" class="val">1000</span> µs/s
+        <input type="range" id="ramp" min="100" max="3400" step="50" value="1000">
+      </label>
+      <button id="rampReset">Standard (1000)</button>
+      <p class="muted">100 % = volle Strombegrenzung · Strombegrenzung wird auf der ESP gespeichert.</p>
+    </section>
+
+    <section class="card">
+      <h2>Direkte Servo-Steuerung (RAW)</h2>
+      <label class="check"><input type="checkbox" id="showPos" checked> Position anzeigen</label>
+      <label>Servo L <span id="rawLval" class="val">1500</span> µs
+        <input type="range" id="rawL" min="500" max="2500" value="1500" step="10">
+      </label>
+      <label>Servo R <span id="rawRval" class="val">1500</span> µs
+        <input type="range" id="rawR" min="500" max="2500" value="1500" step="10">
+      </label>
+      <button id="rawSend">RAW senden</button>
+    </section>
   </section>
 
-  <section>
-    <h2>Modi</h2>
-    <div class="btnRow">
-      <button id="auto">AUTO</button>
-      <button id="random">Zufall</button>
-      <button id="rec">Aufnahme</button>
-      <button id="play">Abspielen</button>
-      <button id="statusBtn">Status</button>
-    </div>
-    <p class="hint">AUTO: links → oben → rechts → versteckt · Zufall: autonomes Hervorschauen · Aufnahme/Abspielen: 20 Hz</p>
-  </section>
-
-  <section>
-    <h2>Geschwindigkeit &amp; Strombegrenzung</h2>
-    <label>Geschwindigkeit <span id="speedVal" class="val">100</span>%
-      <input type="range" id="speed" min="0" max="100" step="5" value="100">
-    </label>
-    <label>Strombegrenzung <span id="rampVal" class="val">1000</span> µs/s
-      <input type="range" id="ramp" min="100" max="3400" step="50" value="1000">
-    </label>
-    <button id="rampReset">Standard (1000)</button>
-    <p class="hint">100 % = volle Strombegrenzung · Strombegrenzung = Sicherheits-Deckel (wird auf der ESP gespeichert).</p>
-  </section>
-
-  <section>
-    <h2>Direkte Servo-Steuerung (RAW)</h2>
-    <label><input type="checkbox" id="showPos" checked> Position anzeigen</label>
-    <label>Servo L <span id="rawLval" class="val">1500</span> µs
-      <input type="range" id="rawL" min="500" max="2500" value="1500" step="10">
-    </label>
-    <label>Servo R <span id="rawRval" class="val">1500</span> µs
-      <input type="range" id="rawR" min="500" max="2500" value="1500" step="10">
-    </label>
-    <button id="rawSend">RAW senden</button>
+  <!-- Tab 4: BLE -->
+  <section id="view-ble" class="view" hidden>
+    <section class="card">
+      <h2>Verbindung</h2>
+      <p id="bleState" class="muted">Nicht verbunden</p>
+      <div class="btn-grid">
+        <button id="connect" class="primary">Verbinden</button>
+        <button id="disconnect" class="danger" disabled>Trennen</button>
+      </div>
+      <label class="check"><input type="checkbox" id="autoReconnect" checked> Automatisch wieder verbinden</label>
+      <p class="muted">Beim Verbinden wird das Gerät gespeichert. Bricht die Verbindung ab, wird automatisch neu verbunden — außer du trennst aktiv.</p>
+    </section>
   </section>
 </main>
+
+<nav class="bottom-nav">
+  <button data-view="control" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+    <span>Steuerung</span>
+  </button>
+  <button data-view="program">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <span>Programm</span>
+  </button>
+  <button data-view="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+    <span>Einstellungen</span>
+  </button>
+  <button data-view="ble">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+    <span>BLE</span>
+  </button>
+</nav>
 
 <script src="./js/ble.js"></script>
 <script src="./js/app.js"></script>

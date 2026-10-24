@@ -1,5 +1,5 @@
 // Web-Bluetooth-Transport (Nordic UART Service).
-// Stellt Verbinden/Senden/Empfangen als kleines Modul bereit.
+// Bietet Verbinden/Trennen/Senden/Empfangen inkl. automatischem Wiederverbinden.
 
 const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // Handy -> ESP (write)
@@ -11,11 +11,17 @@ const Ble = {
   txChar: null,
   rxBuffer: '',
   connected: false,
-  onLine: null,     // (line) => {}
-  onStatus: null,   // (text) => {}
+  autoReconnect: true,     // vom Nutzer über die UI schaltbar
+  manualDisconnect: false, // aktives Trennen -> kein Auto-Reconnect
+  reconnectTimer: null,
+  onLine: null,            // (line) => {}
+  onStatus: null,          // (text) => {}
 
   async connect() {
     try {
+      this.manualDisconnect = false;
+      this._clearReconnect();
+
       this.device = await navigator.bluetooth.requestDevice({
         filters: [{ services: [SERVICE_UUID] }],
         optionalServices: [SERVICE_UUID]
@@ -23,34 +29,39 @@ const Ble = {
       this.device.addEventListener('gattserverdisconnected', () => this._onDisconnect());
 
       const server = await this.device.gatt.connect();
-      const service = await server.getPrimaryService(SERVICE_UUID);
-      this.rxChar = await service.getCharacteristic(RX_UUID);
-      this.txChar = await service.getCharacteristic(TX_UUID);
+      await this._setup(server);
 
-      await this.txChar.startNotifications();
-      this.txChar.addEventListener('characteristicvaluechanged', (e) => this._onData(e));
-
-      this.rxBuffer = '';
       this.connected = true;
-      if (this.onStatus) this.onStatus('verbunden');
+      this._status('verbunden');
       return true;
     } catch (err) {
       this.connected = false;
       this.rxChar = null;
       this.txChar = null;
-      if (this.onStatus) this.onStatus('Fehler: ' + err);
+      this._status('Fehler: ' + err);
       return false;
     }
   },
 
+  async _setup(server) {
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    this.rxChar = await service.getCharacteristic(RX_UUID);
+    this.txChar = await service.getCharacteristic(TX_UUID);
+    await this.txChar.startNotifications();
+    this.txChar.addEventListener('characteristicvaluechanged', (e) => this._onData(e));
+    this.rxBuffer = '';
+  },
+
   async disconnect() {
+    this.manualDisconnect = true;
+    this._clearReconnect();
     this.connected = false;
     if (this.device && this.device.gatt && this.device.gatt.connected) {
       try { await this.device.gatt.disconnect(); } catch (e) { /* ignore */ }
     }
     this.rxChar = null;
     this.txChar = null;
-    if (this.onStatus) this.onStatus('getrennt');
+    this._status('getrennt');
   },
 
   send(line) {
@@ -74,6 +85,41 @@ const Ble = {
     this.connected = false;
     this.rxChar = null;
     this.txChar = null;
-    if (this.onStatus) this.onStatus('getrennt');
+
+    if (this.manualDisconnect) {
+      this._status('getrennt');
+      return;
+    }
+    if (this.autoReconnect) {
+      this._status('Verbindung verloren — verbinde neu…');
+      this._scheduleReconnect();
+    } else {
+      this._status('getrennt');
+    }
+  },
+
+  _scheduleReconnect() {
+    this._clearReconnect();
+    this.reconnectTimer = setTimeout(() => this._tryReconnect(), 1500);
+  },
+
+  async _tryReconnect() {
+    if (this.connected || this.manualDisconnect || !this.device) return;
+    try {
+      const server = await this.device.gatt.connect();
+      await this._setup(server);
+      this.connected = true;
+      this._status('verbunden');
+    } catch (err) {
+      this._scheduleReconnect();
+    }
+  },
+
+  _clearReconnect() {
+    if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+  },
+
+  _status(text) {
+    if (this.onStatus) this.onStatus(text);
   }
 };

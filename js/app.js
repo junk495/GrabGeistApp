@@ -1,16 +1,17 @@
-// GrabGeistApp — App-Logik (UI + BLE-Auswertung).
+// GrabGeistApp — App-Logik (Tabs, Karte, Steuerung, Einstellungen, BLE).
 (() => {
   'use strict';
 
   const $ = (id) => document.getElementById(id);
 
-  const statusEl = $('status');
-  const resetInfo = $('resetInfo');
+  const connBadge = $('connBadge');
+  const bleState = $('bleState');
   const connectBtn = $('connect');
   const disconnectBtn = $('disconnect');
+  const autoReconnect = $('autoReconnect');
   const mapCanvas = $('map');
   const mapCtx = mapCanvas.getContext('2d');
-
+  const resetInfo = $('resetInfo');
   const rampSlider = $('ramp');
   const rampVal = $('rampVal');
   const speedSlider = $('speed');
@@ -28,16 +29,21 @@
   let mapRetries = 0;
   let lastRawInteract = 0;
 
-  function setStatus(text) {
-    statusEl.textContent = text;
+  function setConn(text, on) {
+    connBadge.textContent = text;
+    connBadge.classList.toggle('on', !!on);
+  }
+
+  function setBleState(text) {
+    bleState.textContent = text;
   }
 
   function send(line) {
     if (!Ble.connected) {
-      setStatus('Erst verbinden!');
+      setBleState('Erst verbinden!');
       return Promise.reject(new Error('nicht verbunden'));
     }
-    return Ble.send(line).catch((e) => setStatus('Senden fehlgeschlagen: ' + e));
+    return Ble.send(line).catch((e) => setBleState('Senden fehlgeschlagen: ' + e));
   }
 
   function renderMap() {
@@ -67,11 +73,11 @@
     if (mapComplete) return;
     if (mapRetries < 3) {
       mapRetries++;
-      setStatus('Karte unvollständig (' + mapRows.length + '/' + (mapInfo ? mapInfo.h : '?') + ') — neu anfordern (' + mapRetries + '/3)…');
+      setBleState('Karte unvollständig (' + mapRows.length + '/' + (mapInfo ? mapInfo.h : '?') + ') — neu anfordern (' + mapRetries + '/3)…');
       send('MAP');
       mapTimer = setTimeout(onMapTimeout, 2500);
     } else {
-      setStatus('Karte fehlgeschlagen — bitte neu verbinden');
+      setBleState('Karte fehlgeschlagen — bitte neu verbinden');
     }
   }
 
@@ -83,7 +89,7 @@
       mapInfo = { w: +p[1], h: +p[2], xMin: +p[3], yMin: +p[4], step: +p[5] };
       mapRows = [];
       mapComplete = false;
-      setStatus('Karte empfangen…');
+      setBleState('Karte empfangen…');
       clearMapTimeout();
       mapTimer = setTimeout(onMapTimeout, 2500);
     } else if (line.startsWith('PWM ')) {
@@ -105,21 +111,21 @@
       speedSlider.value = v;
       speedVal.textContent = v;
     } else if (line.startsWith('RANDOM ') || line.startsWith('REC ') || line.startsWith('PLAY ')) {
-      setStatus(line);
+      setBleState(line);
     } else if (line.startsWith('ERR ')) {
       resetInfo.textContent = 'Fehler: ' + line.slice(4) + ' (Befehl unbekannt? Dann alte Firmware — neu flashen.)';
     } else if (mapInfo && !mapComplete) {
       if (line.length === 0) return;   // Leerzeilen nicht als Reihe zählen
       mapRows.push(line);
-      setStatus('Karte empfangen… ' + mapRows.length + '/' + mapInfo.h);
+      setBleState('Karte empfangen… ' + mapRows.length + '/' + mapInfo.h);
       if (mapRows.length >= mapInfo.h) {
         mapComplete = true;
         clearMapTimeout();
         renderMap();
-        setStatus('Karte geladen');
+        setBleState('Karte geladen');
       }
     } else if (line.length > 0) {
-      setStatus('RX: ' + line);
+      setBleState('RX: ' + line);
     }
   }
 
@@ -135,14 +141,32 @@
     send(`MOVE ${x.toFixed(0)} ${y.toFixed(0)}`);
   }
 
-  function updateConnectUi() {
+  function updateButtons() {
     connectBtn.disabled = Ble.connected;
     disconnectBtn.disabled = !Ble.connected;
   }
 
+  function switchView(name) {
+    for (const view of document.querySelectorAll('.view')) {
+      view.hidden = view.id !== `view-${name}`;
+    }
+    for (const btn of document.querySelectorAll('.bottom-nav button')) {
+      btn.classList.toggle('active', btn.dataset.view === name);
+    }
+  }
+
+  // ---- Tabs ----
+  document.querySelectorAll('.bottom-nav button').forEach((b) => {
+    b.addEventListener('click', () => switchView(b.dataset.view));
+  });
+
   // ---- BLE verdrahten ----
   Ble.onLine = handleRxLine;
-  Ble.onStatus = (t) => { setStatus(t); updateConnectUi(); };
+  Ble.onStatus = (t) => {
+    setBleState(t);
+    setConn(t, Ble.connected);
+    updateButtons();
+  };
 
   connectBtn.onclick = async () => {
     const ok = await Ble.connect();
@@ -151,24 +175,28 @@
       send('MAP');
       send('RESETLOG');
     }
-    updateConnectUi();
+    updateButtons();
   };
   disconnectBtn.onclick = () => Ble.disconnect();
 
-  // ---- Controls ----
+  autoReconnect.onchange = () => { Ble.autoReconnect = autoReconnect.checked; };
+
+  // ---- Steuerung (Tab 1) ----
   mapCanvas.addEventListener('click', onTap);
 
-  $('resetlog').onclick = () => { resetInfo.textContent = 'Reset-Log wird abgefragt…'; send('RESETLOG'); };
+  document.querySelectorAll('button[data-cmd]').forEach((b) => {
+    b.onclick = () => send(b.dataset.cmd);
+  });
+
   $('stop').onclick = () => send('STOP');
   $('auto').onclick = () => send('AUTO');
   $('random').onclick = () => send('RANDOM');
   $('rec').onclick = () => send('REC');
   $('play').onclick = () => send('PLAY');
-  $('statusBtn').onclick = () => send('STATUS');
 
-  document.querySelectorAll('button[data-cmd]').forEach((b) => {
-    b.onclick = () => send(b.dataset.cmd);
-  });
+  // ---- Einstellungen (Tab 3) ----
+  $('resetlog').onclick = () => { resetInfo.textContent = 'Reset-Log wird abgefragt…'; send('RESETLOG'); };
+  $('statusBtn').onclick = () => send('STATUS');
 
   rampSlider.oninput = () => { rampVal.textContent = rampSlider.value; };
   rampSlider.onchange = () => send(`RAMP ${rampSlider.value}`);
@@ -188,7 +216,7 @@
   rawRSlider.onchange = sendRaw;
   $('rawSend').onclick = sendRaw;
 
-  updateConnectUi();
+  updateButtons();
 
   // ---- Service Worker registrieren (offline/installierbar) ----
   if ('serviceWorker' in navigator) {
