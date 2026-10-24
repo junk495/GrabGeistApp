@@ -10,6 +10,7 @@
   const disconnectBtn = $('disconnect');
   const autoReconnect = $('autoReconnect');
   const deviceList = $('deviceList');
+  const keepAwake = $('keepAwake');
   const mapCanvas = $('map');
   const mapCtx = mapCanvas.getContext('2d');
   const resetInfo = $('resetInfo');
@@ -262,6 +263,23 @@
 
   updateButtons();
   renderDevices();
+
+  // ---- Bildschirm anlassen (Wake Lock): haelt die BLE-Verbindung stabil ----
+  let wakeLock = null;
+  async function applyWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    if (keepAwake.checked) {
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { /* ignorieren */ }
+    } else if (wakeLock) {
+      try { await wakeLock.release(); } catch (e) { /* ignorieren */ }
+      wakeLock = null;
+    }
+  }
+  keepAwake.onchange = applyWakeLock;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && keepAwake.checked) applyWakeLock();
+  });
+  applyWakeLock();
 
   // ---- Service Worker registrieren (offline/installierbar) ----
   if ('serviceWorker' in navigator) {
