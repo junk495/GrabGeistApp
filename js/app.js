@@ -269,14 +269,6 @@
   // ---- Programm (Tab 2): live anfahren -> uebernehmen ----
   progMap.addEventListener('click', onProgTap);
 
-  document.querySelectorAll('button[data-prog-peek]').forEach((b) => {
-    b.onclick = () => {
-      send(`PEEK ${b.dataset.progPeek}`);
-      pendingStep = { type: 'preset', name: b.dataset.progPeek, speed: 100, holdMs: 0 };
-      progPending.textContent = 'Bereit: Preset ' + b.dataset.progPeek;
-    };
-  });
-
   progAdd.onclick = () => {
     if (!pendingStep) { progPending.textContent = 'Erst eine Position anfahren.'; return; }
     seq.push({ ...pendingStep });
@@ -339,6 +331,15 @@
   }
 
   renderSteps();
+
+  $('seqRun').onclick = () => {
+    if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
+    const payload = { version: 1, name: '', loop: $('seqLoop').checked, steps: seq };
+    send('SEQ_SET ' + JSON.stringify(payload));
+    send('SEQ_RUN');
+    progPending.textContent = 'Ablauf gestartet.';
+  };
+  $('seqStop').onclick = () => send('SEQ_STOP');
 
   // ---- Einstellungen (Tab 3) ----
   $('resetlog').onclick = () => { resetInfo.textContent = 'Reset-Log wird abgefragt…'; send('RESETLOG'); };
