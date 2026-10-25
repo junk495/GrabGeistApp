@@ -287,53 +287,66 @@
       const row = document.createElement('div');
       row.className = 'step';
 
+      const fields = document.createElement('div');
+      fields.className = 'step-fields';
+
       const xLabel = document.createElement('span');
       xLabel.className = 'stepunit'; xLabel.textContent = 'x';
-      row.appendChild(xLabel);
+      fields.appendChild(xLabel);
       const xEl = document.createElement('input');
       xEl.type = 'number'; xEl.step = 1; xEl.value = s.x;
       xEl.className = 'coord';
       xEl.addEventListener('input', () => { s.x = +xEl.value || 0; });
-      row.appendChild(xEl);
+      fields.appendChild(xEl);
 
       const yLabel = document.createElement('span');
       yLabel.className = 'stepunit'; yLabel.textContent = 'y';
-      row.appendChild(yLabel);
+      fields.appendChild(yLabel);
       const yEl = document.createElement('input');
       yEl.type = 'number'; yEl.step = 1; yEl.value = s.y;
       yEl.className = 'coord';
       yEl.addEventListener('input', () => { s.y = +yEl.value || 0; });
-      row.appendChild(yEl);
+      fields.appendChild(yEl);
 
       const spd = document.createElement('input');
       spd.type = 'number'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
       spd.addEventListener('input', () => { s.speed = Math.max(0, Math.min(100, +spd.value || 0)); });
-      row.appendChild(spd);
+      fields.appendChild(spd);
       const pct = document.createElement('span');
       pct.className = 'stepunit'; pct.textContent = '%';
-      row.appendChild(pct);
+      fields.appendChild(pct);
 
       const hold = document.createElement('input');
       hold.type = 'number'; hold.min = 0; hold.step = 100; hold.value = s.holdMs;
       hold.addEventListener('input', () => { s.holdMs = +hold.value || 0; });
-      row.appendChild(hold);
+      fields.appendChild(hold);
       const ms = document.createElement('span');
       ms.className = 'stepunit'; ms.textContent = 'ms';
-      row.appendChild(ms);
+      fields.appendChild(ms);
+
+      row.appendChild(fields);
 
       const actions = document.createElement('div');
       actions.className = 'step-actions';
       const up = document.createElement('button');
       up.textContent = '↑';
+      up.title = 'Nach oben';
       up.onclick = () => { if (i > 0) { [seq[i - 1], seq[i]] = [seq[i], seq[i - 1]]; renderSteps(); } };
       const down = document.createElement('button');
       down.textContent = '↓';
+      down.title = 'Nach unten';
       down.onclick = () => { if (i < seq.length - 1) { [seq[i + 1], seq[i]] = [seq[i], seq[i + 1]]; renderSteps(); } };
+      const copy = document.createElement('button');
+      copy.textContent = '⧉';
+      copy.title = 'Kopieren';
+      copy.onclick = () => { seq.splice(i + 1, 0, { ...s }); renderSteps(); };
       const del = document.createElement('button');
       del.textContent = '✕';
+      del.title = 'Löschen';
       del.onclick = () => { seq.splice(i, 1); renderSteps(); };
       actions.appendChild(up);
       actions.appendChild(down);
+      actions.appendChild(copy);
       actions.appendChild(del);
       row.appendChild(actions);
 

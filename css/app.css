@@ -186,14 +186,24 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 .step {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: 0.4rem;
   padding: 0.45rem 0;
   border-bottom: 1px solid var(--border);
 }
 .step:last-child { border-bottom: none; }
-.step .step-actions { display: flex; gap: 0.4rem; flex: 0 0 auto; }
+
+.step .step-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.step .step-actions {
+  display: flex;
+  gap: 0.5rem;
+}
 .step input[type="number"] {
   width: 4rem;
   background: var(--bg);
@@ -206,12 +216,12 @@ input[type="checkbox"] { accent-color: var(--accent); }
 }
 .step input.coord { width: 3.2rem; }
 .step .stepunit { flex: 0 0 auto; font-size: 1rem; color: var(--muted); }
-.step button {
-  flex: 0 0 auto;
-  padding: 0.4rem 0.6rem;
+.step .step-actions button {
+  flex: 1;
+  padding: 0.5rem 0.4rem;
   font-size: 1.1rem;
   line-height: 1;
-  min-width: 2.5rem;
+  min-height: 2.75rem;
 }
 
 .update-toast {
