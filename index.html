@@ -21,14 +21,17 @@
     <section class="card">
       <h2>Position</h2>
       <canvas id="map"></canvas>
+      <p class="muted">Position: <span id="posLabel" class="val">–</span></p>
       <p class="muted">Tippe auf die Karte (grün = erreichbar). Die ESP sucht den Weg um die Sperrzone.</p>
     </section>
 
     <section class="card">
       <h2>Presets</h2>
       <div class="btn-grid">
+        <button data-cmd="PEEK leftplus">Links+</button>
         <button data-cmd="PEEK left">Links</button>
         <button data-cmd="PEEK right">Rechts</button>
+        <button data-cmd="PEEK rightplus">Rechts+</button>
         <button data-cmd="PEEK top">Oben</button>
         <button data-cmd="PEEK hide">Versteckt</button>
       </div>
@@ -39,10 +42,10 @@
       <div class="btn-grid">
         <button id="auto">AUTO</button>
         <button id="random">Zufall</button>
-        <button id="rec">Aufnahme</button>
-        <button id="play">Abspielen</button>
+        <button id="runProgram">Programm starten</button>
       </div>
-      <p class="muted">AUTO: links → oben → rechts → versteckt · Zufall: autonomes Hervorschauen · Aufnahme/Abspielen: 20 Hz</p>
+      <p class="muted">AUTO: links → oben → rechts → versteckt · Zufall: zufällige Position aus den 6 Presets · Programm: spielt den Ablauf aus dem Programm-Tab</p>
+      <p id="controlStatus" class="muted"></p>
     </section>
 
     <section class="card">

@@ -24,6 +24,8 @@
   const rawRval = $('rawRval');
   const showPos = $('showPos');
   const rawPosEl = $('rawPos');
+  const posLabel = $('posLabel');
+  const controlStatus = $('controlStatus');
   const progMap = $('progMap');
   const progCtx = progMap.getContext('2d');
   const progAdd = $('progAdd');
@@ -49,6 +51,23 @@
   let seqLibrary = [];     // Namen der auf der ESP gespeicherten Ablaeufe
   let livePos = null;      // aktuelle Zielposition (fuer Karten-Marker)
   let activeStepIndex = -1; // aktiver Schritt beim Abspielen (-1 = keiner)
+
+  // Erwartete Zielpositionen der Preset-Buttons (mm), damit der Karten-Marker
+  // sofort umspringt, bevor die Firmware ihre echte POS-Meldung schickt.
+  const PRESET_POS = {
+    'leftplus':  { x: -110, y: 135 },
+    'left':      { x: -50,  y: 150 },
+    'right':     { x: 50,   y: 150 },
+    'rightplus': { x: 110,  y: 135 },
+    'top':       { x: 0,    y: 211 },
+    'hide':      { x: 0,    y: 34 }
+  };
+
+  function updatePosLabel() {
+    posLabel.textContent = livePos
+      ? 'X ' + Math.round(livePos.x) + ' · Y ' + Math.round(livePos.y)
+      : '–';
+  }
 
   function setConn(text, on) {
     connBadge.textContent = text;
@@ -149,6 +168,7 @@
       const p = line.split(' ');
       livePos = { x: +p[1], y: +p[2] };
       renderMap();
+      updatePosLabel();
       rawPosEl.textContent = 'X ' + Math.round(livePos.x) + ' · Y ' + Math.round(livePos.y);
     } else if (line.startsWith('SEQ_STEP ')) {
       activeStepIndex = +line.slice(9);
@@ -188,7 +208,7 @@
       requestSeqList();
     } else if (line.startsWith('SEQ_ERR ')) {
       progPending.textContent = 'Fehler: ' + line.slice(8);
-    } else if (line.startsWith('RANDOM ') || line.startsWith('REC ') || line.startsWith('PLAY ')) {
+    } else if (line.startsWith('RANDOM ')) {
       setBleState(line);
     } else if (line.startsWith('ERR ')) {
       resetInfo.textContent = 'Fehler: ' + line.slice(4) + ' (Befehl unbekannt? Dann alte Firmware — neu flashen.)';
@@ -321,14 +341,31 @@
   mapCanvas.addEventListener('click', onTap);
 
   document.querySelectorAll('button[data-cmd]').forEach((b) => {
-    b.onclick = () => send(b.dataset.cmd);
+    b.onclick = () => {
+      const m = b.dataset.cmd.match(/^PEEK\s+(\w+)$/);
+      if (m && PRESET_POS[m[1]]) {
+        livePos = PRESET_POS[m[1]];
+        renderMap();
+        updatePosLabel();
+      }
+      send(b.dataset.cmd);
+    };
   });
 
   $('stop').onclick = () => send('STOP');
   $('auto').onclick = () => send('AUTO');
   $('random').onclick = () => send('RANDOM');
-  $('rec').onclick = () => send('REC');
-  $('play').onclick = () => send('PLAY');
+  $('runProgram').onclick = async () => {
+    if (!seq.length) { controlStatus.textContent = 'Kein Ablauf definiert (Programm-Tab).'; return; }
+    const payload = { version: 1, name: '', loop: $('seqLoop').checked, autostart: $('seqAutostart').checked, steps: seq };
+    try {
+      await send('SEQ_SET ' + JSON.stringify(payload));
+      await send('SEQ_RUN');
+      controlStatus.textContent = 'Ablauf gestartet.';
+    } catch (e) {
+      controlStatus.textContent = 'Fehler: ' + e.message;
+    }
+  };
 
   // ---- Programm (Tab 2): live anfahren -> uebernehmen ----
   progMap.addEventListener('click', onProgTap);
