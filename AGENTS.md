@@ -23,8 +23,18 @@ PWA zur Steuerung von **GrabGeist** per **Web Bluetooth** (Nordic UART Service).
 
 ## Hosting & Betrieb
 - GitHub Pages: `https://junk495.github.io/GrabGeistApp/`
-- Relative Pfade; Service-Worker-Cache (`CACHE` in `sw.js` bei Release erhöhen).
+- Relative Pfade; Service-Worker-Cache (Cache-Name aus der Version in `js/version.js`).
 - Vanilla JS, kein Build; Android Chrome (Web Bluetooth).
+
+## Versionierung & Updates
+- SemVer `major.minor.patch` (eine zentrale Konstante `APP_VERSION` in `js/version.js`):
+  - **major** (erste Stelle): großer Umbau
+  - **minor** (mittlere Stelle): Funktionsänderung
+  - **patch** (hintere Stelle): minimale/redaktionelle Änderung
+- Bei Release `APP_VERSION` in `js/version.js` erhöhen (der Service Worker übernimmt sie
+  für den Cache-Namen) und `version` in `manifest.json` gleichziehen.
+- Die App prüft beim Start auf eine neue Service-Worker-Version und bietet unten ein
+  Neuladen-Popup an (`js/update.js`).
 
 ## Regeln
 - Bei Protokoll-Änderung die **Firmware** (`GrabGeist`) mit anpassen.

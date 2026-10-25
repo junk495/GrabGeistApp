@@ -1,8 +1,10 @@
 // Service Worker für GrabGeistApp (PWA).
 // Cached die App-Shell, damit die App nach der ersten Installation offline läuft.
-// Bei jedem Release CACHE erhöhen -> Browser holt die neuen Dateien.
+// Version (SemVer) kommt aus js/version.js -> bei jedem Release dort erhöhen.
 
-const CACHE = 'grabgeist-app-v7';
+importScripts('./js/version.js');
+
+const CACHE = 'grabgeist-app-' + APP_VERSION;
 
 const ASSETS = [
   './',
@@ -11,6 +13,8 @@ const ASSETS = [
   './css/app.css',
   './js/ble.js',
   './js/app.js',
+  './js/version.js',
+  './js/update.js',
   './icons/icon.svg'
 ];
 
@@ -18,8 +22,14 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
       .then((cache) => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
   );
+});
+
+// Neuladen-Anforderung der App: der wartende Worker darf sofort aktiv werden.
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {

@@ -47,5 +47,13 @@ icons/icon.svg      App-Icon
 
 ## Updates
 
-Neue Version: Dateien in diesem Repo ändern, `CACHE` in `sw.js` erhöhen, committen
-und pushen. Die installierte App lädt die neue Version beim nächsten Öffnen.
+Die App prüft beim Start automatisch, ob eine neue Version bereitsteht, und schlägt
+dann unten am Bildschirm ein Neuladen vor.
+
+Versionierung (SemVer, `major.minor.patch`):
+- **major**: großer Umbau
+- **minor**: Funktionsänderung
+- **patch**: minimale/redaktionelle Änderung
+
+Neue Version veröffentlichen: `APP_VERSION` in `js/version.js` erhöhen und `version`
+in `manifest.json` gleichziehen, committen und pushen.

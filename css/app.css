@@ -205,3 +205,24 @@ input[type="checkbox"] { accent-color: var(--accent); }
 }
 .step .muted { flex: 0 0 auto; }
 .step button { flex: 0 0 auto; padding: 0.25rem 0.5rem; }
+
+.update-toast {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: calc(4.6rem + env(safe-area-inset-bottom));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  font-size: 0.95rem;
+}
+.update-toast[hidden] { display: none; }
+.update-toast button { flex: 0 0 auto; }
+
