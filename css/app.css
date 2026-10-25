@@ -227,8 +227,22 @@ input[type="checkbox"] { accent-color: var(--accent); }
   padding: 0.25rem 0.4rem;
   font-size: 1.1rem;
   font-family: monospace;
+  -moz-appearance: textfield;   /* Firefox: Spinner ausblenden */
+  appearance: textfield;        /* Chrome: Spinner ausblenden */
+}
+.step input[type="number"]::-webkit-outer-spin-button,
+.step input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .step input.coord { width: 3.9rem; }
+
+/* Desktop (breiter Viewport): etwas breitere Felder, damit die Werte nicht
+   abgeschnitten werden. Am Handy bleibt die bisherige Breite unveraendert. */
+@media (min-width: 700px) {
+  .step input[type="number"] { width: 4.6rem; }
+  .step input.coord { width: 4.4rem; }
+}
 .step .stepunit { flex: 0 0 auto; font-size: 1rem; color: var(--muted); }
 .step .step-actions button {
   flex: 1;
