@@ -366,6 +366,17 @@
       controlStatus.textContent = 'Fehler: ' + e.message;
     }
   };
+  $('runProgRandom').onclick = async () => {
+    if (!seq.length) { controlStatus.textContent = 'Kein Ablauf definiert (Programm-Tab).'; return; }
+    const payload = { version: 1, name: '', loop: $('seqLoop').checked, autostart: $('seqAutostart').checked, steps: seq };
+    try {
+      await send('SEQ_SET ' + JSON.stringify(payload));
+      await send('PROGRANDOM');
+      controlStatus.textContent = 'Programm zufällig gestartet.';
+    } catch (e) {
+      controlStatus.textContent = 'Fehler: ' + e.message;
+    }
+  };
 
   // ---- Programm (Tab 2): live anfahren -> uebernehmen ----
   progMap.addEventListener('click', onProgTap);
