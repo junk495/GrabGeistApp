@@ -449,7 +449,8 @@
       $('seqAutostart').checked = !!data.autostart;
       if (data.name) seqName.value = data.name;
       renderSteps();
-      progPending.textContent = 'Ablauf geladen.';
+      progPending.textContent = 'Ablauf geladen (' + seq.length + ' Schritte).';
+      stepsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
       progPending.textContent = 'Fehler beim Laden: ' + e.message;
     }
