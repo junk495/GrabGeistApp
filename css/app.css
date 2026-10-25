@@ -195,7 +195,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .step .steppos { font-family: monospace; font-size: 1.1rem; flex: 0 0 auto; color: var(--text); }
 .step input[type="range"] { flex: 1; min-width: 0; }
 .step input[type="number"] {
-  width: 5.5rem;
+  width: 4rem;
   background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);

@@ -293,12 +293,12 @@
       row.appendChild(summary);
 
       const spd = document.createElement('input');
-      spd.type = 'range'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
-      const spdVal = document.createElement('span');
-      spdVal.className = 'val'; spdVal.textContent = s.speed + '%';
-      spd.addEventListener('input', () => { s.speed = +spd.value; spdVal.textContent = spd.value + '%'; });
+      spd.type = 'number'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
+      spd.addEventListener('input', () => { s.speed = Math.max(0, Math.min(100, +spd.value || 0)); });
       row.appendChild(spd);
-      row.appendChild(spdVal);
+      const pct = document.createElement('span');
+      pct.className = 'stepunit'; pct.textContent = '%';
+      row.appendChild(pct);
 
       const hold = document.createElement('input');
       hold.type = 'number'; hold.min = 0; hold.step = 100; hold.value = s.holdMs;

@@ -88,11 +88,20 @@ const Ble = {
     this._status('getrennt');
   },
 
-  send(line) {
+  async send(line) {
     if (!this.rxChar) {
-      return Promise.reject(new Error('nicht verbunden'));
+      throw new Error('nicht verbunden');
     }
-    return this.rxChar.writeValue(new TextEncoder().encode(line + '\n'));
+    const data = new TextEncoder().encode(line + '\n');
+    // In MTU-gerechte Stücke zerlegen. Web Bluetooth / NimBLE kann lange
+    // "Write Long"-Writes nicht zuverlässig verarbeiten; ab ca. 4
+    // Sequenz-Schritten würde das JSON sonst die 244-Byte-Grenze
+    // überschreiten. Die Firmware setzt die Teile im Zeilenpuffer wieder
+    // zusammen (Zeilenende erst im letzten Stück).
+    const CHUNK = 180;
+    for (let i = 0; i < data.length; i += CHUNK) {
+      await this.rxChar.writeValue(data.slice(i, Math.min(i + CHUNK, data.length)));
+    }
   },
 
   _onData(event) {
