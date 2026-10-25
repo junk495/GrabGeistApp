@@ -477,7 +477,7 @@
       }));
       $('seqLoop').checked = !!data.loop;
       $('seqAutostart').checked = !!data.autostart;
-      if (data.name) seqName.value = data.name;
+      seqName.value = data.name || '';
       renderSteps();
       progPending.textContent = 'Ablauf geladen (' + seq.length + ' Schritte).';
       stepsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
