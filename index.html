@@ -29,9 +29,8 @@
       <div class="btn-grid">
         <button data-cmd="PEEK left">Links</button>
         <button data-cmd="PEEK right">Rechts</button>
-        <button data-cmd="PEEK top">Beide oben</button>
+        <button data-cmd="PEEK top">Oben</button>
         <button data-cmd="PEEK hide">Versteckt</button>
-        <button id="stop" class="danger">STOP</button>
       </div>
     </section>
 
@@ -44,6 +43,10 @@
         <button id="play">Abspielen</button>
       </div>
       <p class="muted">AUTO: links → oben → rechts → versteckt · Zufall: autonomes Hervorschauen · Aufnahme/Abspielen: 20 Hz</p>
+    </section>
+
+    <section class="card">
+      <button id="stop" class="danger stop-big">STOP</button>
     </section>
   </section>
 
@@ -120,6 +123,7 @@
     <section class="card">
       <h2>Direkte Servo-Steuerung (RAW)</h2>
       <label class="check"><input type="checkbox" id="showPos" checked> Position anzeigen</label>
+      <p class="muted">Position: <span id="rawPos" class="val">–</span></p>
       <label>Servo L <span id="rawLval" class="val">1500</span> µs
         <input type="range" id="rawL" min="500" max="2500" value="1500" step="10">
       </label>

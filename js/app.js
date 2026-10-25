@@ -23,6 +23,7 @@
   const rawLval = $('rawLval');
   const rawRval = $('rawRval');
   const showPos = $('showPos');
+  const rawPosEl = $('rawPos');
   const progMap = $('progMap');
   const progCtx = progMap.getContext('2d');
   const progAdd = $('progAdd');
@@ -148,6 +149,7 @@
       const p = line.split(' ');
       livePos = { x: +p[1], y: +p[2] };
       renderMap();
+      rawPosEl.textContent = 'X ' + Math.round(livePos.x) + ' · Y ' + Math.round(livePos.y);
     } else if (line.startsWith('SEQ_STEP ')) {
       activeStepIndex = +line.slice(9);
       renderSteps();
@@ -573,6 +575,10 @@
     if (document.visibilityState === 'visible' && keepAwake.checked) applyWakeLock();
   });
   applyWakeLock();
+
+  // Keine BLE-Verbindung beim App-Start? Direkt den BLE-Tab zeigen.
+  // (Nur beim Start; eine spaetere Wiederverbindung wechselt den Tab nicht.)
+  if (!Ble.connected) switchView('ble');
 
   // ---- Service Worker registrieren (offline/installierbar) ----
   if ('serviceWorker' in navigator) {

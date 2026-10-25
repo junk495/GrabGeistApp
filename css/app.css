@@ -106,6 +106,12 @@ button:active { transform: translateY(1px); }
 button:disabled { opacity: 0.45; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+.stop-big {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
 
 .muted { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0; }
 

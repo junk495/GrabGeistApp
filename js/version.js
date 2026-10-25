@@ -3,4 +3,4 @@
 // - minor (mittlere Stelle): Funktionsänderung
 // - patch (hintere Stelle):  minimale/redaktionelle Änderung
 // Wird von der UI angezeigt und vom Service Worker für den Cache-Namen genutzt.
-const APP_VERSION = '0.11.1';
+const APP_VERSION = '0.12.0';
