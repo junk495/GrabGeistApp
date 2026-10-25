@@ -192,7 +192,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   border-bottom: 1px solid var(--border);
 }
 .step:last-child { border-bottom: none; }
-.step .steptype { font-weight: 600; min-width: 3.5rem; color: var(--muted); text-transform: capitalize; }
+.step .steppos { font-family: monospace; font-size: 1.1rem; flex: 0 0 auto; color: var(--text); }
 .step input[type="range"] { flex: 1; min-width: 0; }
 .step input[type="number"] {
   width: 4.5rem;

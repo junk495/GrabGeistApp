@@ -2,7 +2,7 @@
 // Cached die App-Shell, damit die App nach der ersten Installation offline läuft.
 // Bei jedem Release CACHE erhöhen -> Browser holt die neuen Dateien.
 
-const CACHE = 'grabgeist-app-v6';
+const CACHE = 'grabgeist-app-v7';
 
 const ASSETS = [
   './',

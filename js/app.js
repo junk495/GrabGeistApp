@@ -287,14 +287,9 @@
       const row = document.createElement('div');
       row.className = 'step';
 
-      const type = document.createElement('span');
-      type.className = 'steptype';
-      type.textContent = s.type === 'move' ? 'Move' : s.name;
-      row.appendChild(type);
-
       const summary = document.createElement('span');
-      summary.className = 'muted';
-      summary.textContent = s.type === 'move' ? '(' + s.x + ', ' + s.y + ')' : 'Preset';
+      summary.className = 'steppos';
+      summary.textContent = s.type === 'move' ? s.x + ', ' + s.y : (s.name || s.type);
       row.appendChild(summary);
 
       const spd = document.createElement('input');
