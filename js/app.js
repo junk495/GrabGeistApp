@@ -124,6 +124,12 @@
       const v = Math.round(+line.split(' ')[1]);
       speedSlider.value = v;
       speedVal.textContent = v;
+    } else if (line.startsWith('SEQ_STATE ')) {
+      for (const kv of line.split(' ').slice(1)) {
+        const [k, v] = kv.split('=');
+        if (k === 'loop') $('seqLoop').checked = (v === '1');
+        else if (k === 'autostart') $('seqAutostart').checked = (v === '1');
+      }
     } else if (line.startsWith('RANDOM ') || line.startsWith('REC ') || line.startsWith('PLAY ')) {
       setBleState(line);
     } else if (line.startsWith('ERR ')) {
@@ -195,6 +201,7 @@
       mapRetries = 0;
       send('MAP');
       send('RESETLOG');
+      send('SEQ_GET');
     }
     updateButtons();
     renderDevices();
@@ -246,6 +253,7 @@
       mapRetries = 0;
       send('MAP');
       send('RESETLOG');
+      send('SEQ_GET');
     }
     updateButtons();
   };
