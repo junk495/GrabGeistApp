@@ -32,6 +32,7 @@
   const seqSave = $('seqSave');
   const seqListEl = $('seqList');
   const seqExport = $('seqExport');
+  const seqRefresh = $('seqRefresh');
 
   let mapInfo = null;
   let mapRows = [];
@@ -209,6 +210,7 @@
     for (const btn of document.querySelectorAll('.bottom-nav button')) {
       btn.classList.toggle('active', btn.dataset.view === name);
     }
+    if (name === 'program' && Ble.connected) requestSeqList();
   }
 
   // ---- Tabs ----
@@ -216,15 +218,16 @@
     b.addEventListener('click', () => switchView(b.dataset.view));
   });
 
+  function onConnected() {
+    mapRetries = 0;
+    send('MAP');
+    send('RESETLOG');
+    send('SEQ_GET');
+    requestSeqList();
+  }
+
   async function connectToDevice(device) {
-    const ok = await Ble.connectTo(device);
-    if (ok) {
-      mapRetries = 0;
-      send('MAP');
-      send('RESETLOG');
-      send('SEQ_GET');
-      requestSeqList();
-    }
+    await Ble.connectTo(device);
     updateButtons();
     renderDevices();
   }
@@ -267,17 +270,11 @@
     setConn(t, Ble.connected);
     updateButtons();
     renderDevices();
+    if (t === 'verbunden') onConnected();
   };
 
   connectBtn.onclick = async () => {
-    const ok = await Ble.connect();
-    if (ok) {
-      mapRetries = 0;
-      send('MAP');
-      send('RESETLOG');
-      send('SEQ_GET');
-      requestSeqList();
-    }
+    await Ble.connect();
     updateButtons();
   };
   disconnectBtn.onclick = () => Ble.disconnect();
@@ -464,6 +461,8 @@
     send('SEQ_SET ' + JSON.stringify(payload))
       .then(() => send('SEQ_SAVE ' + name));
   };
+
+  seqRefresh.onclick = () => { if (Ble.connected) requestSeqList(); };
 
   seqExport.onclick = () => {
     if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
