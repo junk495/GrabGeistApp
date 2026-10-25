@@ -205,6 +205,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   border-bottom: 1px solid var(--border);
 }
 .step:last-child { border-bottom: none; }
+.step.active { background: rgba(59, 130, 246, 0.18); border-radius: 6px; }
 
 .step .step-fields {
   display: flex;

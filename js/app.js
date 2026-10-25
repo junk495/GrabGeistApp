@@ -43,6 +43,8 @@
   let seq = [];            // Schrittliste (lokaler Entwurf)
   let pendingStep = null;  // zuletzt angefahrene, noch nicht uebernommene Position
   let seqLibrary = [];     // Namen der auf der ESP gespeicherten Ablaeufe
+  let livePos = null;      // aktuelle Zielposition (fuer Karten-Marker)
+  let activeStepIndex = -1; // aktiver Schritt beim Abspielen (-1 = keiner)
 
   function setConn(text, on) {
     connBadge.textContent = text;
@@ -61,6 +63,24 @@
     return Ble.send(line).catch((e) => setBleState('Senden fehlgeschlagen: ' + e));
   }
 
+  function drawLiveMarker(img) {
+    if (!livePos || !mapInfo) return;
+    const cx = Math.round((livePos.x - mapInfo.xMin) / mapInfo.step);
+    const cy = Math.round(mapInfo.h - 1 - (livePos.y - mapInfo.yMin) / mapInfo.step);
+    if (cx < 0 || cx >= mapInfo.w || cy < 0 || cy >= mapInfo.h) return;
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const px = cx + dx, py = cy + dy;
+        if (px < 0 || px >= mapInfo.w || py < 0 || py >= mapInfo.h) continue;
+        const idx = (py * mapInfo.w + px) * 4;
+        img.data[idx]     = 255;
+        img.data[idx + 1] = 220;
+        img.data[idx + 2] = 0;
+        img.data[idx + 3] = 255;
+      }
+    }
+  }
+
   function renderMapTo(canvas, ctx) {
     canvas.width = mapInfo.w;
     canvas.height = mapInfo.h;
@@ -77,6 +97,7 @@
         img.data[idx + 3] = 255;
       }
     }
+    drawLiveMarker(img);
     ctx.putImageData(img, 0, 0);
   }
 
@@ -120,6 +141,13 @@
         rawLval.textContent = p[1];
         rawRval.textContent = p[2];
       }
+    } else if (line.startsWith('POS ')) {
+      const p = line.split(' ');
+      livePos = { x: +p[1], y: +p[2] };
+      renderMap();
+    } else if (line.startsWith('SEQ_STEP ')) {
+      activeStepIndex = +line.slice(9);
+      renderSteps();
     } else if (line.startsWith('RST ')) {
       resetInfo.textContent = 'Reset: ' + line.slice(4);
     } else if (line.startsWith('RAMP ')) {
@@ -316,7 +344,7 @@
     }
     seq.forEach((s, i) => {
       const row = document.createElement('div');
-      row.className = 'step';
+      row.className = 'step' + (i === activeStepIndex ? ' active' : '');
 
       const fields = document.createElement('div');
       fields.className = 'step-fields';
