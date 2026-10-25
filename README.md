@@ -31,7 +31,9 @@ sich über den **Nordic UART Service** mit der ESP32-Firmware (Repo `GrabGeist`)
 
 Textbefehle (eine Zeile, `\n`-terminiert):
 `MOVE <x> <y>`, `PEEK <left|right|top|hide>`, `RAW <l> <r>`, `STOP`, `STATUS`,
-`MAP`, `RAMP [<us/s>]`, `SPEED [<%>]`, `RESETLOG`, `AUTO`, `RANDOM`, `REC`, `PLAY`.
+`MAP`, `RAMP [<us/s>]`, `SPEED [<%>]`, `RESETLOG`, `AUTO`, `RANDOM`, `REC`, `PLAY`,
+`SEQ_SET <json>`, `SEQ_RUN`, `SEQ_STOP`, `SEQ_GET`, `SEQ_SAVE <name>`,
+`SEQ_LIST`, `SEQ_LOAD <name>`, `SEQ_DELETE <name>`.
 
 ## Struktur
 
@@ -41,7 +43,9 @@ manifest.json       PWA-Manifest
 sw.js               Service Worker (Offline-Cache)
 css/app.css         Styles
 js/ble.js           Web-Bluetooth-Transport (NUS)
-js/app.js           App-Logik (Karte, Presets, Steuerung)
+js/app.js           App-Logik (Karte, Ablauf-Editor, Einstellungen)
+js/version.js       zentrale Versionskonstante (SemVer)
+js/update.js        Service-Worker-Registrierung + Update-Popup
 icons/icon.svg      App-Icon
 ```
 

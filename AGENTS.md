@@ -15,11 +15,13 @@ PWA zur Steuerung von **GrabGeist** per **Web Bluetooth** (Nordic UART Service).
 - RX (Handy→ESP, write):  `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
 - TX (ESP→Handy, notify): `6e400003-b5a3-f393-e0a9-e50e24dcca9e`
 - Textprotokoll: `MOVE`, `PEEK`, `RAW`, `STOP`, `STATUS`, `MAP`, `RAMP`, `SPEED`,
-  `RESETLOG`, `AUTO`, `RANDOM`, `REC`, `PLAY` (Sequence-Befehle `SEQ_*` in Planung).
+  `RESETLOG`, `AUTO`, `RANDOM`, `REC`, `PLAY` sowie `SEQ_SET`/`SEQ_RUN`/`SEQ_STOP`/
+  `SEQ_GET`/`SEQ_SAVE`/`SEQ_LIST`/`SEQ_LOAD`/`SEQ_DELETE`.
 
 ## Struktur
 - `index.html` / `manifest.json` / `sw.js`
-- `css/app.css`, `js/ble.js` (Transport), `js/app.js` (UI), `icons/`
+- `css/app.css`, `js/ble.js` (Transport), `js/app.js` (UI), `js/version.js` (Version),
+  `js/update.js` (SW-Registrierung/Update), `icons/`
 
 ## Hosting & Betrieb
 - GitHub Pages: `https://junk495.github.io/GrabGeistApp/`
