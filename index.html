@@ -52,8 +52,11 @@
     <section class="card">
       <h2>Position wählen</h2>
       <canvas id="progMap"></canvas>
-      <p class="muted">Tippe auf die Karte → der Geist fährt hin. Passt die Position, mit „Übernehmen“ als Schritt übernehmen.</p>
-      <button id="progAdd" class="primary">Übernehmen</button>
+      <p class="muted">Tippe auf die Karte → der Geist fährt hin. „Versteckt“ fährt die versteckte Position an. Passt die Position, mit „Übernehmen“ als Schritt übernehmen.</p>
+      <div class="save-row">
+        <button id="progAdd" class="primary">Übernehmen</button>
+        <button id="progHide">Versteckt</button>
+      </div>
       <p id="progPending" class="muted"></p>
     </section>
 
@@ -63,15 +66,12 @@
         <label class="check"><input type="checkbox" id="seqLoop" checked> Schleife</label>
         <label class="check"><input type="checkbox" id="seqAutostart"> Autostart</label>
       </div>
-      <div class="save-row">
-        <button id="seqHide">+ Versteckt</button>
-      </div>
       <div id="steps"></div>
       <div class="btn-grid">
         <button id="seqRun" class="primary">Abspielen</button>
         <button id="seqStop" class="danger">Stopp</button>
       </div>
-      <p class="muted">Jeder Schritt: Position (oder „versteckt“) + Geschwindigkeit + Haltezeit.</p>
+      <p class="muted">Jeder Schritt: Position + Geschwindigkeit + Haltezeit.</p>
     </section>
 
     <section class="card">
