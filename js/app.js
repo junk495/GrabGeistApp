@@ -358,7 +358,7 @@
 
   $('seqRun').onclick = async () => {
     if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
-    const payload = { version: 1, name: '', loop: $('seqLoop').checked, steps: seq };
+    const payload = { version: 1, name: '', loop: $('seqLoop').checked, autostart: $('seqAutostart').checked, steps: seq };
     try {
       await send('SEQ_SET ' + JSON.stringify(payload));
       await send('SEQ_RUN');
