@@ -144,6 +144,7 @@
         seqLibrary = [];
       }
       renderSeqList();
+      progPending.textContent = 'Liste: ' + seqLibrary.length + ' Einträge';
     } else if (line.startsWith('SEQ_JSON ')) {
       loadFromJson(line.slice(9));
     } else if (line === 'SEQ_SAVED') {
