@@ -186,14 +186,14 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 .step {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0;
   border-bottom: 1px solid var(--border);
 }
 .step:last-child { border-bottom: none; }
-.step .steppos { font-family: monospace; font-size: 1.1rem; flex: 0 0 auto; color: var(--text); }
-.step input[type="range"] { flex: 1; min-width: 0; }
+.step .step-actions { display: flex; gap: 0.4rem; flex: 0 0 auto; }
 .step input[type="number"] {
   width: 4rem;
   background: var(--bg);
@@ -204,6 +204,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   font-size: 1.1rem;
   font-family: monospace;
 }
+.step input.coord { width: 3.2rem; }
 .step .stepunit { flex: 0 0 auto; font-size: 1rem; color: var(--muted); }
 .step button {
   flex: 0 0 auto;

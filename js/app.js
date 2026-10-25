@@ -287,10 +287,23 @@
       const row = document.createElement('div');
       row.className = 'step';
 
-      const summary = document.createElement('span');
-      summary.className = 'steppos';
-      summary.textContent = s.type === 'move' ? s.x + ', ' + s.y : (s.name || s.type);
-      row.appendChild(summary);
+      const xLabel = document.createElement('span');
+      xLabel.className = 'stepunit'; xLabel.textContent = 'x';
+      row.appendChild(xLabel);
+      const xEl = document.createElement('input');
+      xEl.type = 'number'; xEl.step = 1; xEl.value = s.x;
+      xEl.className = 'coord';
+      xEl.addEventListener('input', () => { s.x = +xEl.value || 0; });
+      row.appendChild(xEl);
+
+      const yLabel = document.createElement('span');
+      yLabel.className = 'stepunit'; yLabel.textContent = 'y';
+      row.appendChild(yLabel);
+      const yEl = document.createElement('input');
+      yEl.type = 'number'; yEl.step = 1; yEl.value = s.y;
+      yEl.className = 'coord';
+      yEl.addEventListener('input', () => { s.y = +yEl.value || 0; });
+      row.appendChild(yEl);
 
       const spd = document.createElement('input');
       spd.type = 'number'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
@@ -308,6 +321,8 @@
       ms.className = 'stepunit'; ms.textContent = 'ms';
       row.appendChild(ms);
 
+      const actions = document.createElement('div');
+      actions.className = 'step-actions';
       const up = document.createElement('button');
       up.textContent = '↑';
       up.onclick = () => { if (i > 0) { [seq[i - 1], seq[i]] = [seq[i], seq[i - 1]]; renderSteps(); } };
@@ -317,9 +332,10 @@
       const del = document.createElement('button');
       del.textContent = '✕';
       del.onclick = () => { seq.splice(i, 1); renderSteps(); };
-      row.appendChild(up);
-      row.appendChild(down);
-      row.appendChild(del);
+      actions.appendChild(up);
+      actions.appendChild(down);
+      actions.appendChild(del);
+      row.appendChild(actions);
 
       stepsEl.appendChild(row);
     });
