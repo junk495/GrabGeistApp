@@ -43,7 +43,6 @@
   let seq = [];            // Schrittliste (lokaler Entwurf)
   let pendingStep = null;  // zuletzt angefahrene, noch nicht uebernommene Position
   let seqLibrary = [];     // Namen der auf der ESP gespeicherten Ablaeufe
-  let collectingSeqList = false;
 
   function setConn(text, on) {
     connBadge.textContent = text;
@@ -137,10 +136,13 @@
         if (k === 'loop') $('seqLoop').checked = (v === '1');
         else if (k === 'autostart') $('seqAutostart').checked = (v === '1');
       }
-    } else if (line.startsWith('SEQ_NAME ')) {
-      if (collectingSeqList) seqLibrary.push(line.slice(9));
-    } else if (line === 'SEQ_LIST_DONE') {
-      collectingSeqList = false;
+    } else if (line.startsWith('SEQ_LISTJSON ')) {
+      try {
+        const arr = JSON.parse(line.slice(13));
+        seqLibrary = Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        seqLibrary = [];
+      }
       renderSeqList();
     } else if (line.startsWith('SEQ_JSON ')) {
       loadFromJson(line.slice(9));
@@ -399,7 +401,6 @@
 
   function requestSeqList() {
     seqLibrary = [];
-    collectingSeqList = true;
     send('SEQ_LIST');
   }
 
