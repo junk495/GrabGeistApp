@@ -2,7 +2,7 @@
   "name": "GrabGeist",
   "short_name": "GrabGeist",
   "description": "Steuerung des GrabGeist per Bluetooth (Web Bluetooth, Nordic UART Service).",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "lang": "de",
   "start_url": "./",
   "scope": "./",

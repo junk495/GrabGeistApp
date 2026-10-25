@@ -70,6 +70,19 @@
       </div>
       <p class="muted">Jeder Schritt: Position + Geschwindigkeit + Haltezeit.</p>
     </section>
+
+    <section class="card">
+      <h2>Speichern &amp; Export</h2>
+      <div class="save-row">
+        <input type="text" id="seqName" placeholder="Name des Ablaufs">
+        <button id="seqSave" class="primary">Auf ESP speichern</button>
+      </div>
+      <div id="seqList" class="device-list"></div>
+      <div class="btn-grid">
+        <button id="seqExport">Exportieren (JSON)</button>
+      </div>
+      <p class="muted">Gespeicherte Abläufe liegen auf der ESP — von jedem Gerät abrufbar. „Exportieren“ lädt die aktuelle JSON-Datei herunter.</p>
+    </section>
   </section>
 
   <!-- Tab 3: Einstellungen & Monitoring -->

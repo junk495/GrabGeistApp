@@ -28,6 +28,10 @@
   const progAdd = $('progAdd');
   const progPending = $('progPending');
   const stepsEl = $('steps');
+  const seqName = $('seqName');
+  const seqSave = $('seqSave');
+  const seqListEl = $('seqList');
+  const seqExport = $('seqExport');
 
   let mapInfo = null;
   let mapRows = [];
@@ -37,6 +41,8 @@
   let lastRawInteract = 0;
   let seq = [];            // Schrittliste (lokaler Entwurf)
   let pendingStep = null;  // zuletzt angefahrene, noch nicht uebernommene Position
+  let seqLibrary = [];     // Namen der auf der ESP gespeicherten Ablaeufe
+  let collectingSeqList = false;
 
   function setConn(text, on) {
     connBadge.textContent = text;
@@ -130,6 +136,21 @@
         if (k === 'loop') $('seqLoop').checked = (v === '1');
         else if (k === 'autostart') $('seqAutostart').checked = (v === '1');
       }
+    } else if (line.startsWith('SEQ_NAME ')) {
+      if (collectingSeqList) seqLibrary.push(line.slice(9));
+    } else if (line === 'SEQ_LIST_DONE') {
+      collectingSeqList = false;
+      renderSeqList();
+    } else if (line.startsWith('SEQ_JSON ')) {
+      loadFromJson(line.slice(9));
+    } else if (line === 'SEQ_SAVED') {
+      progPending.textContent = 'Ablauf gespeichert.';
+      requestSeqList();
+    } else if (line === 'SEQ_DELETED') {
+      progPending.textContent = 'Ablauf gelöscht.';
+      requestSeqList();
+    } else if (line.startsWith('SEQ_ERR ')) {
+      progPending.textContent = 'Fehler: ' + line.slice(8);
     } else if (line.startsWith('RANDOM ') || line.startsWith('REC ') || line.startsWith('PLAY ')) {
       setBleState(line);
     } else if (line.startsWith('ERR ')) {
@@ -202,6 +223,7 @@
       send('MAP');
       send('RESETLOG');
       send('SEQ_GET');
+      requestSeqList();
     }
     updateButtons();
     renderDevices();
@@ -254,6 +276,7 @@
       send('MAP');
       send('RESETLOG');
       send('SEQ_GET');
+      requestSeqList();
     }
     updateButtons();
   };
@@ -376,6 +399,87 @@
     }
   };
   $('seqStop').onclick = () => send('SEQ_STOP');
+
+  function requestSeqList() {
+    seqLibrary = [];
+    collectingSeqList = true;
+    send('SEQ_LIST');
+  }
+
+  function renderSeqList() {
+    seqListEl.innerHTML = '';
+    if (!seqLibrary.length) {
+      seqListEl.innerHTML = '<p class="muted">Noch keine Abläufe auf der ESP gespeichert.</p>';
+      return;
+    }
+    seqLibrary.forEach((name) => {
+      const row = document.createElement('div');
+      row.className = 'device';
+
+      const label = document.createElement('span');
+      label.textContent = name;
+
+      const loadBtn = document.createElement('button');
+      loadBtn.textContent = 'Laden';
+      loadBtn.onclick = () => { seqName.value = name; send('SEQ_LOAD ' + name); };
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.title = 'Löschen';
+      delBtn.onclick = () => { send('SEQ_DELETE ' + name); };
+
+      row.appendChild(label);
+      row.appendChild(loadBtn);
+      row.appendChild(delBtn);
+      seqListEl.appendChild(row);
+    });
+  }
+
+  function loadFromJson(text) {
+    try {
+      const data = JSON.parse(text);
+      if (!Array.isArray(data.steps)) throw new Error('steps fehlt');
+      seq = data.steps.map((s) => ({
+        type: s.type === 'preset' ? 'preset' : 'move',
+        x: Math.round(+s.x || 0),
+        y: Math.round(+s.y || 0),
+        speed: Math.max(0, Math.min(100, +s.speed || 100)),
+        holdMs: Math.max(0, +s.holdMs || 0)
+      }));
+      $('seqLoop').checked = !!data.loop;
+      $('seqAutostart').checked = !!data.autostart;
+      if (data.name) seqName.value = data.name;
+      renderSteps();
+      progPending.textContent = 'Ablauf geladen.';
+    } catch (e) {
+      progPending.textContent = 'Fehler beim Laden: ' + e.message;
+    }
+  }
+
+  seqSave.onclick = () => {
+    const name = seqName.value.trim();
+    if (!name) { progPending.textContent = 'Name eingeben.'; return; }
+    if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
+    const payload = { version: 1, name, loop: $('seqLoop').checked, autostart: $('seqAutostart').checked, steps: seq };
+    send('SEQ_SET ' + JSON.stringify(payload))
+      .then(() => send('SEQ_SAVE ' + name));
+  };
+
+  seqExport.onclick = () => {
+    if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }
+    const name = seqName.value.trim() || 'grabgeist-ablauf';
+    const payload = { version: 1, name, loop: $('seqLoop').checked, autostart: $('seqAutostart').checked, steps: seq };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name.replace(/[^a-z0-9_-]+/gi, '_') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    progPending.textContent = 'JSON exportiert.';
+  };
 
   // ---- Einstellungen (Tab 3) ----
   $('resetlog').onclick = () => { resetInfo.textContent = 'Reset-Log wird abgefragt…'; send('RESETLOG'); };
