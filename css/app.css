@@ -195,16 +195,23 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .step .steppos { font-family: monospace; font-size: 1.1rem; flex: 0 0 auto; color: var(--text); }
 .step input[type="range"] { flex: 1; min-width: 0; }
 .step input[type="number"] {
-  width: 4.5rem;
+  width: 5.5rem;
   background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.2rem 0.4rem;
-  font-size: 0.85rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 1.1rem;
+  font-family: monospace;
 }
-.step .muted { flex: 0 0 auto; }
-.step button { flex: 0 0 auto; padding: 0.25rem 0.5rem; }
+.step .stepunit { flex: 0 0 auto; font-size: 1rem; color: var(--muted); }
+.step button {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.6rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  min-width: 2.5rem;
+}
 
 .update-toast {
   position: fixed;

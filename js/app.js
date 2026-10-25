@@ -305,7 +305,7 @@
       hold.addEventListener('input', () => { s.holdMs = +hold.value || 0; });
       row.appendChild(hold);
       const ms = document.createElement('span');
-      ms.className = 'muted'; ms.textContent = 'ms';
+      ms.className = 'stepunit'; ms.textContent = 'ms';
       row.appendChild(ms);
 
       const up = document.createElement('button');
