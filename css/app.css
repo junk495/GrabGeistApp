@@ -230,6 +230,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 }
 .step input.coord { width: 3.9rem; }
 .step .stepunit { flex: 0 0 auto; font-size: 1rem; color: var(--muted); }
+.step .presetlabel { flex: 0 0 auto; font-family: monospace; font-size: 1.1rem; color: var(--accent); }
 .step .step-actions button {
   flex: 1;
   padding: 0.5rem 0.4rem;

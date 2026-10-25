@@ -35,6 +35,7 @@
   const seqRefresh = $('seqRefresh');
   const seqImport = $('seqImport');
   const seqFile = $('seqFile');
+  const seqHide = $('seqHide');
 
   let mapInfo = null;
   let mapRows = [];
@@ -351,23 +352,30 @@
       const fields = document.createElement('div');
       fields.className = 'step-fields';
 
-      const xLabel = document.createElement('span');
-      xLabel.className = 'stepunit'; xLabel.textContent = 'x';
-      fields.appendChild(xLabel);
-      const xEl = document.createElement('input');
-      xEl.type = 'number'; xEl.step = 1; xEl.value = s.x;
-      xEl.className = 'coord';
-      xEl.addEventListener('input', () => { s.x = +xEl.value || 0; });
-      fields.appendChild(xEl);
+      if (s.type === 'preset') {
+        const presetLabel = document.createElement('span');
+        presetLabel.className = 'presetlabel';
+        presetLabel.textContent = s.name === 'hide' ? 'versteckt' : (s.name || 'preset');
+        fields.appendChild(presetLabel);
+      } else {
+        const xLabel = document.createElement('span');
+        xLabel.className = 'stepunit'; xLabel.textContent = 'x';
+        fields.appendChild(xLabel);
+        const xEl = document.createElement('input');
+        xEl.type = 'number'; xEl.step = 1; xEl.value = s.x;
+        xEl.className = 'coord';
+        xEl.addEventListener('input', () => { s.x = +xEl.value || 0; });
+        fields.appendChild(xEl);
 
-      const yLabel = document.createElement('span');
-      yLabel.className = 'stepunit'; yLabel.textContent = 'y';
-      fields.appendChild(yLabel);
-      const yEl = document.createElement('input');
-      yEl.type = 'number'; yEl.step = 1; yEl.value = s.y;
-      yEl.className = 'coord';
-      yEl.addEventListener('input', () => { s.y = +yEl.value || 0; });
-      fields.appendChild(yEl);
+        const yLabel = document.createElement('span');
+        yLabel.className = 'stepunit'; yLabel.textContent = 'y';
+        fields.appendChild(yLabel);
+        const yEl = document.createElement('input');
+        yEl.type = 'number'; yEl.step = 1; yEl.value = s.y;
+        yEl.className = 'coord';
+        yEl.addEventListener('input', () => { s.y = +yEl.value || 0; });
+        fields.appendChild(yEl);
+      }
 
       const spd = document.createElement('input');
       spd.type = 'number'; spd.min = 0; spd.max = 100; spd.step = 5; spd.value = s.speed;
@@ -430,6 +438,11 @@
   };
   $('seqStop').onclick = () => send('SEQ_STOP');
 
+  seqHide.onclick = () => {
+    seq.push({ type: 'preset', name: 'hide', speed: 100, holdMs: 0 });
+    renderSteps();
+  };
+
   function requestSeqList() {
     seqLibrary = [];
     send('SEQ_LIST');
@@ -468,13 +481,20 @@
     try {
       const data = JSON.parse(text);
       if (!Array.isArray(data.steps)) throw new Error('steps fehlt');
-      seq = data.steps.map((s) => ({
-        type: s.type === 'preset' ? 'preset' : 'move',
-        x: Math.round(+s.x || 0),
-        y: Math.round(+s.y || 0),
-        speed: Math.max(0, Math.min(100, +s.speed || 100)),
-        holdMs: Math.max(0, +s.holdMs || 0)
-      }));
+      seq = data.steps.map((s) => {
+        const step = {
+          type: s.type === 'preset' ? 'preset' : 'move',
+          speed: Math.max(0, Math.min(100, +s.speed || 100)),
+          holdMs: Math.max(0, +s.holdMs || 0)
+        };
+        if (step.type === 'preset') {
+          step.name = s.name || 'hide';
+        } else {
+          step.x = Math.round(+s.x || 0);
+          step.y = Math.round(+s.y || 0);
+        }
+        return step;
+      });
       $('seqLoop').checked = !!data.loop;
       $('seqAutostart').checked = !!data.autostart;
       seqName.value = data.name || '';
