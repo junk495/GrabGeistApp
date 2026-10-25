@@ -33,6 +33,8 @@
   const seqListEl = $('seqList');
   const seqExport = $('seqExport');
   const seqRefresh = $('seqRefresh');
+  const seqImport = $('seqImport');
+  const seqFile = $('seqFile');
 
   let mapInfo = null;
   let mapRows = [];
@@ -68,8 +70,8 @@
     const cx = Math.round((livePos.x - mapInfo.xMin) / mapInfo.step);
     const cy = Math.round(mapInfo.h - 1 - (livePos.y - mapInfo.yMin) / mapInfo.step);
     if (cx < 0 || cx >= mapInfo.w || cy < 0 || cy >= mapInfo.h) return;
-    for (let dy = -2; dy <= 2; dy++) {
-      for (let dx = -2; dx <= 2; dx++) {
+    for (let dy = 0; dy < 2; dy++) {
+      for (let dx = 0; dx < 2; dx++) {
         const px = cx + dx, py = cy + dy;
         if (px < 0 || px >= mapInfo.w || py < 0 || py >= mapInfo.h) continue;
         const idx = (py * mapInfo.w + px) * 4;
@@ -494,6 +496,18 @@
   };
 
   seqRefresh.onclick = () => { if (Ble.connected) requestSeqList(); };
+
+  seqImport.onclick = () => seqFile.click();
+  seqFile.onchange = () => {
+    const file = seqFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      loadFromJson(String(reader.result));
+      seqFile.value = '';
+    };
+    reader.readAsText(file);
+  };
 
   seqExport.onclick = () => {
     if (!seq.length) { progPending.textContent = 'Kein Ablauf definiert.'; return; }

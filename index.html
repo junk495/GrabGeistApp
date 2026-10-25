@@ -82,9 +82,11 @@
       </div>
       <div id="seqList" class="device-list"></div>
       <div class="btn-grid">
+        <button id="seqImport">Importieren (JSON)</button>
         <button id="seqExport">Exportieren (JSON)</button>
       </div>
-      <p class="muted">„Laden“ holt den Ablauf in die Schrittliste (oben). „Auf ESP speichern“ überschreibt bei gleichem Namen bzw. legt bei neuem Namen einen neuen Ablauf an. „Exportieren“ lädt die aktuelle JSON-Datei herunter.</p>
+      <input type="file" id="seqFile" accept=".json,application/json" hidden>
+      <p class="muted">„Laden“ holt den Ablauf in die Schrittliste (oben). „Auf ESP speichern“ überschreibt bei gleichem Namen bzw. legt bei neuem Namen einen neuen Ablauf an. „Importieren“ liest eine exportierte JSON-Datei ein, „Exportieren“ lädt sie herunter.</p>
     </section>
   </section>
 
